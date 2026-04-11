@@ -51,9 +51,12 @@ const DashboardGuru = () => {
     }
   };
 
-  const filteredPR = prList.filter(item => {
-    const matchesSearch = item.judul.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         item.deskripsi.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredPR = (prList || []).filter(item => {
+    if (!item) return false;
+    const judul = item.judul || '';
+    const deskripsi = item.deskripsi || '';
+    const matchesSearch = judul.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         deskripsi.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesKelas = selectedKelas ? item.kelas === selectedKelas : true;
     return matchesSearch && matchesKelas;
   });
