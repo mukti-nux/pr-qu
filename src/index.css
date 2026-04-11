@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-blue: #1e3a5f;
+  --accent-yellow: #f59e0b;
+  --accent-green: #25D366;
+}
+
+@layer base {
+  body {
+    @apply text-slate-800 bg-slate-50 font-sans;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-semibold transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-primary {
+    @apply bg-primary-dark text-white hover:bg-slate-800;
+  }
+  .btn-accent {
+    @apply bg-accent-yellow text-white hover:bg-orange-600;
+  }
+  .btn-wa {
+    @apply bg-accent-wa text-white hover:bg-green-600;
+  }
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden;
+  }
+  .input {
+    @apply w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-light focus:border-transparent outline-none transition-all;
+  }
+}
+
+/* Custom styles for dark mode */
+.dark body {
+  @apply bg-slate-900 text-slate-100;
+}
+
+.dark .card {
+  @apply bg-slate-800 border-slate-700;
+}
+
+.dark .input {
+  @apply bg-slate-700 border-slate-600 focus:ring-accent-purple;
+}
