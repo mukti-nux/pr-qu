@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate, NavLink } from 'react-router-dom';
+import { useNavigate, NavLink, useLocation } from 'react-router-dom';
 import { 
   Building2, Users, GraduationCap, LayoutGrid, BookOpen, 
   MessageSquare, FileText, BarChart, LogOut, ShieldCheck
@@ -7,6 +7,8 @@ import {
 
 export const SuperAdminLayout = ({ children }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentHash = location.hash || '#instansi';
   const session = JSON.parse(localStorage.getItem('superadmin_session') || '{}');
 
   const handleLogout = () => {
@@ -45,13 +47,13 @@ export const SuperAdminLayout = ({ children }) => {
               key={item.id}
               onClick={() => navigate(`/super-admin#${item.id}`)}
               className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-sm font-bold transition-all group ${
-                window.location.hash === `#${item.id}` || (!window.location.hash && item.id === 'instansi')
+                currentHash === `#${item.id}`
                 ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20' 
                 : 'text-slate-400 hover:bg-white/5 hover:text-white'
               }`}
             >
               <span className={`transition-transform duration-300 group-hover:scale-110 ${
-                window.location.hash === `#${item.id}` || (!window.location.hash && item.id === 'instansi') ? 'scale-110' : ''
+                currentHash === `#${item.id}` ? 'scale-110' : ''
               }`}>
                 {item.icon}
               </span>
@@ -83,7 +85,7 @@ export const SuperAdminLayout = ({ children }) => {
       <main className="flex-1 flex flex-col overflow-hidden bg-[#0f172a]">
         <header className="h-20 border-b border-white/5 flex items-center justify-between px-10 bg-[#1e293b]/30 backdrop-blur-md">
            <h2 className="text-xl font-black text-white uppercase tracking-wider">
-             {menuItems.find(m => `#${m.id}` === window.location.hash)?.name || 'Instansi'}
+             {menuItems.find(m => `#${m.id}` === currentHash)?.name || 'Instansi'}
            </h2>
            <div className="flex items-center gap-4">
               <div className="px-4 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-[10px] font-black text-slate-400 uppercase tracking-widest">

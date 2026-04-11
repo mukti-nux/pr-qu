@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { SuperAdminLayout } from '../components/SuperAdminLayout';
 import { Toast, Modal } from '../components/Modal';
 import { Button } from '../components/Button';
@@ -31,17 +32,14 @@ const SuperAdmin = () => {
   const [editData, setEditData] = useState(null);
   const [formData, setFormData] = useState({});
 
+  const location = useLocation();
+
   useEffect(() => {
-    const handleHashCheck = () => {
-      const hash = window.location.hash.replace('#', '') || 'instansi';
-      setActiveTab(hash);
-      setSearchQuery('');
-    };
-    handleHashCheck();
-    window.addEventListener('hashchange', handleHashCheck);
+    const hash = location.hash.replace('#', '') || 'instansi';
+    setActiveTab(hash);
+    setSearchQuery('');
     fetchBaseData();
-    return () => window.removeEventListener('hashchange', handleHashCheck);
-  }, []);
+  }, [location.hash]);
 
   useEffect(() => {
     if (activeTab !== 'instansi' && selectedInstansi) {
@@ -130,13 +128,22 @@ const SuperAdmin = () => {
     }
   };
 
-  const filteredData = data.filter(item => {
+  const filteredData = (data || []).filter(item => {
+    if (!item) return false;
     const s = searchQuery.toLowerCase();
-    if (activeTab === 'instansi') return item.nama?.toLowerCase().includes(s) || item.kode?.toLowerCase().includes(s);
-    if (activeTab === 'guru') return item.nama?.toLowerCase().includes(s);
-    if (activeTab === 'siswa') return item.nama?.toLowerCase().includes(s) || item.kelas?.toLowerCase().includes(s);
-    if (activeTab === 'monitor-pr') return item.judul?.toLowerCase().includes(s) || item.mapel?.toLowerCase().includes(s);
-    return item.nama?.toLowerCase().includes(s) || item.kelas?.toLowerCase().includes(s);
+    
+    // Safety check for properties
+    const nama = item.nama?.toLowerCase() || '';
+    const kode = item.kode?.toLowerCase() || '';
+    const judul = item.judul?.toLowerCase() || '';
+    const mapel = item.mapel?.toLowerCase() || '';
+    const kelas = item.kelas?.toLowerCase() || '';
+
+    if (activeTab === 'instansi') return nama.includes(s) || kode.includes(s);
+    if (activeTab === 'guru') return nama.includes(s);
+    if (activeTab === 'siswa') return nama.includes(s) || kelas.includes(s);
+    if (activeTab === 'monitor-pr') return judul.includes(s) || mapel.includes(s);
+    return nama.includes(s) || kelas.includes(s);
   });
 
   return (
