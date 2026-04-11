@@ -19,14 +19,14 @@ export const PRTable = ({ data, onEdit, onDelete }) => {
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
-          {data.length === 0 ? (
+          {(data?.length || 0) === 0 ? (
             <tr>
               <td colSpan="7" className="px-6 py-12 text-center text-slate-400 italic">
                 Tidak ada data PR ditemukan
               </td>
             </tr>
           ) : (
-            data.map((item, index) => (
+            data?.map((item, index) => (
               <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-6 py-4 text-sm text-slate-500 font-medium">{index + 1}</td>
                 <td className="px-6 py-4">
@@ -67,7 +67,7 @@ export const PRTable = ({ data, onEdit, onDelete }) => {
                       <Edit2 size={18} />
                     </button>
                     <button 
-                      onClick={() => onDelete(item.id)}
+                      onClick={() => onDelete(item?.id)}
                       className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all"
                       title="Hapus PR"
                     >

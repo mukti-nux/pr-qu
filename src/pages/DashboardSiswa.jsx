@@ -67,12 +67,12 @@ const DashboardSiswa = () => {
                   <span className="text-xs font-black uppercase tracking-widest">{session.instansi}</span>
                 </motion.div>
                 <h1 className="text-4xl md:text-5xl font-black mb-2 tracking-tight">Halo, {session.nama}! 👋</h1>
-                <p className="text-slate-400 text-lg font-medium">Ada <span className="text-accent-yellow">{prList.length} Tugas Baru</span> di kelas {session.kelas} hari ini.</p>
+                <p className="text-slate-400 text-lg font-medium">Ada <span className="text-accent-yellow">{prList?.length || 0} Tugas Baru</span> di kelas {session.kelas} hari ini.</p>
               </div>
               <div className="bg-white/5 p-6 rounded-3xl backdrop-blur-md border border-white/10 flex items-center gap-4">
                  <div className="text-right">
                     <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Terselesaikan</p>
-                    <h4 className="text-3xl font-black text-accent-yellow">{finishedIds.length} / {prList.length}</h4>
+                    <h4 className="text-3xl font-black text-accent-yellow">{finishedIds?.length || 0} / {prList?.length || 0}</h4>
                  </div>
                  <div className="h-12 w-1 bg-white/10 rounded-full"></div>
                  <div className="p-3 bg-accent-yellow rounded-2xl">
@@ -99,7 +99,7 @@ const DashboardSiswa = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {prList.length === 0 ? (
+            {(prList?.length || 0) === 0 ? (
               <div className="col-span-full py-20 bg-white rounded-[2rem] border border-dashed border-slate-300 flex flex-col items-center">
                  <div className="bg-slate-100 p-6 rounded-3xl mb-4 text-slate-400">
                     <Info size={48} />
@@ -108,11 +108,11 @@ const DashboardSiswa = () => {
                  <p className="text-slate-500">Nikmati waktu istirahatmu atau periksa kembali nanti!</p>
               </div>
             ) : (
-              prList.map(item => (
+              prList?.map(item => (
                 <PRCard 
                   key={item.id} 
                   item={item} 
-                  isFinished={finishedIds.includes(String(item.id))}
+                  isFinished={finishedIds?.includes(String(item.id))}
                   onToggleStatus={handleToggleStatus}
                 />
               ))

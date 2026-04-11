@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const SuperAdmin = () => {
   const [activeTab, setActiveTab] = useState('instansi');
   const [instansiList, setInstansiList] = useState([]);
+  const [kelasList, setKelasList] = useState([]);
   const [selectedInstansi, setSelectedInstansi] = useState('');
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -53,11 +54,20 @@ const SuperAdmin = () => {
     try {
       const list = await getInstansi();
       setInstansiList(list);
-      if (list.length > 0 && !selectedInstansi) {
+      if (list?.length > 0 && !selectedInstansi) {
         setSelectedInstansi(list[0].id);
       }
     } catch (err) {
       setToast({ message: 'Gagal memuat list instansi', type: 'error' });
+    }
+  };
+
+  const fetchKelasList = async (instansi_id) => {
+    try {
+      const list = await getKelas(instansi_id);
+      setKelasList(list);
+    } catch (err) {
+      setToast({ message: 'Gagal memuat list kelas', type: 'error' });
     }
   };
 
@@ -98,10 +108,13 @@ const SuperAdmin = () => {
       } else if (activeTab === 'mapel') {
         await addMapel(formData.nama, selectedInstansi);
       } else if (activeTab === 'wa-groups') {
+        if (!formData.group_id || formData.group_id.toUpperCase() === 'PENDING') {
+          return setToast({ message: 'Group ID tidak boleh kosong atau PENDING', type: 'error' });
+        }
         await updateWAGroup({ ...formData, instansi_id: selectedInstansi });
       }
       
-      setToast({ message: 'Aksi berhasil dilakukan', type: 'success' });
+      setToast({ message: `Data ${editData ? 'diperbarui' : 'ditambahkan'}`, type: 'success' });
       setModalOpen(false);
       fetchTabData();
     } catch (err) {
@@ -158,7 +171,7 @@ const SuperAdmin = () => {
                  value={selectedInstansi}
                  onChange={(e) => setSelectedInstansi(e.target.value)}
                >
-                 {instansiList.map(i => <option key={i.id} value={i.id}>{i.nama}</option>)}
+                 {instansiList?.map(i => <option key={i.id} value={i.id}>{i.nama}</option>)}
                </select>
             </div>
             <div className="flex-1 w-full relative">
@@ -171,10 +184,15 @@ const SuperAdmin = () => {
                  onChange={(e) => setSearchQuery(e.target.value)}
                />
             </div>
-            {['instansi', 'guru', 'kelas', 'mapel'].includes(activeTab) && (
+            {['instansi', 'guru', 'kelas', 'mapel', 'wa-groups'].includes(activeTab) && (
               <Button 
                 className="bg-purple-600 hover:bg-purple-500 rounded-2xl h-[60px] px-8 flex items-center gap-2 shadow-lg shadow-purple-600/20"
-                onClick={() => { setEditData(null); setFormData({}); setModalOpen(true); }}
+                onClick={() => { 
+                  setEditData(null); 
+                  setFormData({}); 
+                  setModalOpen(true); 
+                  if (activeTab === 'wa-groups') fetchKelasList(selectedInstansi);
+                }}
               >
                 <Plus size={20} /> Tambah
               </Button>
@@ -207,7 +225,7 @@ const SuperAdmin = () => {
           <div className="px-10 py-6 border-b border-white/5 flex justify-between items-center bg-white/5">
              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Listing Data</h4>
              <span className="text-[10px] font-black text-purple-400 bg-purple-500/10 px-4 py-1.5 rounded-full border border-purple-500/20">
-               {filteredData.length} TOTAL
+               {filteredData?.length || 0} TOTAL
              </span>
           </div>
 
@@ -224,9 +242,9 @@ const SuperAdmin = () => {
                 <tbody className="divide-y divide-white/5">
                    {loading ? (
                      <tr><td colSpan="4" className="px-10 py-20 text-center text-slate-500 animate-pulse font-bold tracking-widest uppercase">Loading Matrix...</td></tr>
-                   ) : filteredData.length === 0 ? (
+                   ) : (filteredData?.length || 0) === 0 ? (
                      <tr><td colSpan="4" className="px-10 py-20 text-center text-slate-600 italic">Data tidak ditemukan dalam database.</td></tr>
-                   ) : filteredData.map((item, i) => (
+                   ) : filteredData?.map((item, i) => (
                       <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
                          <td className="px-10 py-6">
                             <span className="w-8 h-8 flex items-center justify-center bg-slate-900 rounded-lg text-xs font-black text-slate-600 group-hover:bg-purple-600/20 group-hover:text-purple-400 transition-all">
@@ -375,8 +393,20 @@ const SuperAdmin = () => {
              {activeTab === 'wa-groups' && (
                 <>
                    <div>
-                      <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Kelas</label>
-                      <input type="text" readOnly className="w-full bg-slate-100 border border-slate-200 rounded-2xl px-6 py-4 text-slate-500 font-bold opacity-70" value={formData.kelas || ''} />
+                      <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Pilih Kelas</label>
+                      {editData ? (
+                        <input type="text" readOnly className="w-full bg-slate-100 border border-slate-200 rounded-2xl px-6 py-4 text-slate-500 font-bold opacity-70" value={formData.kelas || ''} />
+                      ) : (
+                        <select 
+                          required
+                          className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-800 outline-none focus:ring-4 focus:ring-purple-500/10 font-bold"
+                          value={formData.kelas || ''}
+                          onChange={e => setFormData({...formData, kelas: e.target.value})}
+                        >
+                          <option value="">-- Pilih Kelas --</option>
+                          {kelasList?.map(k => <option key={k.id} value={k.nama}>{k.nama}</option>)}
+                        </select>
+                      )}
                    </div>
                    <div>
                       <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">WhatsApp Group ID</label>

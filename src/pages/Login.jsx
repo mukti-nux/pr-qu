@@ -68,7 +68,7 @@ const Login = () => {
     try {
       const res = await loginGuru(selectedInstansi, guruId, kodeUnik);
       if (res.status === 'success') {
-        const instansiName = instansiList.find(i => i.id === selectedInstansi)?.nama;
+        const instansiName = instansiList?.find(i => i.id === selectedInstansi)?.nama;
         localStorage.setItem('user_session', JSON.stringify({
           ...res.data,
           instansi: instansiName
@@ -96,7 +96,7 @@ const Login = () => {
         nisn: siswaNisn
       });
       if (res.status === 'success') {
-        const instansiName = instansiList.find(i => i.id === selectedInstansi)?.nama;
+        const instansiName = instansiList?.find(i => i.id === selectedInstansi)?.nama;
         localStorage.setItem('user_session', JSON.stringify({
           ...res.data,
           instansi: instansiName
@@ -182,7 +182,7 @@ const Login = () => {
                   required
                 >
                   <option value="">-- Pilih Instansi / Sekolah --</option>
-                  {instansiList.map(i => (
+                  {instansiList?.map(i => (
                     <option key={i.id} value={i.id}>{i.nama}</option>
                   ))}
                 </select>
@@ -203,7 +203,7 @@ const Login = () => {
                       required
                     >
                       <option value="">-- Pilih Nama Anda --</option>
-                      {userList.map(u => (
+                      {userList?.map(u => (
                         <option key={u.id} value={u.id}>{u.nama}</option>
                       ))}
                     </select>
@@ -252,7 +252,7 @@ const Login = () => {
                       required
                     >
                       <option value="">-- Pilih Kelas --</option>
-                      {kelasList.map(k => (
+                      {kelasList?.map(k => (
                         <option key={k.id} value={k.nama}>{k.nama}</option>
                       ))}
                     </select>

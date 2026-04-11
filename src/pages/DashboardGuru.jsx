@@ -140,7 +140,7 @@ const DashboardGuru = () => {
             <div className="bg-white/10 p-4 rounded-2xl"><LayoutGrid className="w-8 h-8 text-accent-yellow" /></div>
             <div>
               <p className="text-xs font-black uppercase tracking-widest text-slate-400">Total PR</p>
-              <h4 className="text-3xl font-black">{prList.length}</h4>
+              <h4 className="text-3xl font-black">{prList?.length || 0}</h4>
             </div>
           </div>
           <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-5">
@@ -180,7 +180,7 @@ const DashboardGuru = () => {
               onDelete={handleDelete}
             />
             <p className="mt-4 text-sm text-slate-500 font-medium">
-              Menampilkan {filteredPR.length} PR
+              Menampilkan {filteredPR?.length || 0} PR
               {selectedKelas && ` untuk kelas ${selectedKelas}`}
             </p>
           </motion.div>

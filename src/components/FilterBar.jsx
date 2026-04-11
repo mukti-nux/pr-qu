@@ -31,7 +31,7 @@ export const FilterBar = ({
             onChange={(e) => setSelectedKelas(e.target.value)}
           >
             <option value="">Semua Kelas</option>
-            {kelasList.map(k => (
+            {kelasList?.map(k => (
               <option key={k.id} value={k.nama}>{k.nama}</option>
             ))}
           </select>

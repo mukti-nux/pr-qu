@@ -116,7 +116,7 @@ const Manajemen = () => {
               Daftar {activeTab === 'kelas' ? 'Kelas' : 'Mapel'}
             </h4>
             <span className="text-xs font-black text-slate-800 bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
-              {data.length} TOTAL
+              {data?.length || 0} TOTAL
             </span>
           </div>
 
@@ -126,10 +126,10 @@ const Manajemen = () => {
                 <div className="w-8 h-8 border-4 border-slate-200 border-t-primary-dark rounded-full animate-spin" />
                 <p className="font-bold text-sm">Harap Tunggu...</p>
               </div>
-            ) : data.length === 0 ? (
+            ) : (data?.length || 0) === 0 ? (
                <div className="p-12 text-center text-slate-400 italic">Belum ada data</div>
             ) : (
-              data.map((item, index) => (
+              data?.map((item, index) => (
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
