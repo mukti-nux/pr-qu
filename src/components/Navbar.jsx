@@ -21,7 +21,7 @@ export const Navbar = () => {
               <div className="bg-accent-yellow p-1.5 rounded-lg">
                 <BookOpen className="w-6 h-6 text-primary-dark" />
               </div>
-              <span className="text-xl font-bold tracking-tight">PR SEKOLAH</span>
+              <span className="text-xl font-bold tracking-tight">MumuTask</span>
             </Link>
           </div>
 

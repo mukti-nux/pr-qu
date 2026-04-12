@@ -87,7 +87,7 @@ const DashboardGuru = () => {
             instansi_id: session.instansi_id,
             pr_id: result.data.id,
             judul: payload.judul,
-            pesan: `📚 *PR BARU — ${payload.kelas}*\n\nMapel     : ${payload.mapel}\nJudul     : ${payload.judul}\nDeskripsi : ${payload.deskripsi}\nDeadline  : ${formatDate(payload.deadline)} ⏰\nDari Guru : ${session.nama}\n\nSegera dikerjakan ya! 💪\n— Sistem PR Sekolah`
+            pesan: `📚 *PR BARU — ${payload.kelas}*\n\nMapel     : ${payload.mapel}\nJudul     : ${payload.judul}\nDeskripsi : ${payload.deskripsi}\nDeadline  : ${formatDate(payload.deadline)} ⏰\nDari Guru : ${session.nama}\n\nSegera dikerjakan ya! 💪\n— MumuTask`
           };
           setPendingWA(waPayload);
           setWAPreviewOpen(true);

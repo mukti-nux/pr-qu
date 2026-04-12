@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="public/logo.png" width="200" alt="EduTask Logo">
+  <img src="public/logo.png" width="200" alt="Mumutask Logo">
 </p>
 
-<h1 align="center">📚 EduTask</h1>
+<h1 align="center">📚 Mumutask</h1>
 <p align="center">
   <b>Sistem Manajemen Pekerjaan Rumah Modern dengan Notifikasi WhatsApp Otomatis</b><br/>
   Dirancang untuk mempermudah koordinasi antara Guru, Siswa, dan Instansi Pendidikan.
@@ -384,6 +384,6 @@ MIT License © 2026 [MuktiLabs](https://muktilabs.my.id)
 ---
 
 <p align="center">
-  <b>EduTask</b> — Otomasi PR, Fokus Belajar 🎓<br/>
+  <b>Mumutask</b> — Otomasi PR, Fokus Belajar 🎓<br/>
   <a href="https://muktilabs.my.id">muktilabs.my.id</a>
 </p>

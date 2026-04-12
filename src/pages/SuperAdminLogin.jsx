@@ -49,7 +49,7 @@ const SuperAdminLogin = () => {
                <ShieldAlert size={40} className="text-white" />
             </div>
             <h1 className="text-3xl font-black text-white tracking-tight uppercase">Super Admin</h1>
-            <p className="text-slate-400 font-medium">Sistem Manajemen PR Sekolah</p>
+            <p className="text-slate-400 font-medium">MumuTask - Sistem Manajemen PR</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">

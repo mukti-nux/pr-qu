@@ -127,7 +127,7 @@ const Login = () => {
                <div className="bg-accent-yellow p-3 rounded-2xl shadow-lg rotate-3">
                  <BookOpen className="w-10 h-10 text-primary-dark" />
                </div>
-               <h1 className="text-3xl font-black tracking-tighter">PR SEKOLAH</h1>
+               <h1 className="text-3xl font-black tracking-tighter">MumuTask</h1>
             </div>
             <h2 className="text-4xl font-bold leading-tight mb-4">
               Kelola Tugas <br />

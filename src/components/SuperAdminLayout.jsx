@@ -37,7 +37,7 @@ export const SuperAdminLayout = ({ children }) => {
           </div>
           <div>
             <h1 className="text-lg font-black text-white tracking-widest uppercase italic">SA Panel</h1>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">PR SEKOLAH v1.0</p>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">MumuTask v2.0</p>
           </div>
         </div>
 
