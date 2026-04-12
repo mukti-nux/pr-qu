@@ -64,12 +64,23 @@ const DashboardGuru = () => {
   const handleSavePR = async (payload) => {
     try {
       if (editData) {
-        await updatePR({ ...payload, id: editData.id });
+        await updatePR({ 
+          id: editData.id,
+          judul: payload.judul,
+          deskripsi: payload.deskripsi,
+          deadline: payload.deadline,
+          instansi_id: session.instansi_id 
+        });
         setToast({ message: 'PR berhasil diperbarui', type: 'success' });
         setPRModalOpen(false);
         initData();
       } else {
-        const result = await createPR({ ...payload, instansi_id: session.instansi_id });
+        const result = await createPR({ 
+          ...payload, 
+          guru_id: session.id,
+          nama_guru: session.nama,
+          instansi_id: session.instansi_id 
+        });
         if (payload.kirim_wa) {
           const waPayload = {
             kelas: payload.kelas,
@@ -106,7 +117,7 @@ const DashboardGuru = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Hapus PR ini?')) {
       try {
-        await deletePR(id);
+        await deletePR(id, session.instansi_id);
         setToast({ message: 'PR berhasil dihapus', type: 'success' });
         initData();
       } catch (err) {

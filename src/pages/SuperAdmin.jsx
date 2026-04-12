@@ -35,25 +35,32 @@ const SuperAdmin = () => {
 
   const location = useLocation();
 
+  // Load Initial Instansi
+  useEffect(() => {
+    fetchInstansiList();
+  }, []);
+
+  // Listen to Hash Change
   useEffect(() => {
     const hash = location.hash.replace('#', '') || 'instansi';
     setActiveTab(hash);
     setSearchQuery('');
-    fetchBaseData();
   }, [location.hash]);
 
+  // Fetch Data when Tab or Instansi changes
   useEffect(() => {
-    if (activeTab !== 'instansi' && selectedInstansi) {
+    if (activeTab === 'instansi') {
       fetchTabData();
-    } else if (activeTab === 'instansi') {
+    } else if (selectedInstansi) {
       fetchTabData();
+      fetchSecondaryData(); // e.g. kelas list for dropdowns
     }
   }, [activeTab, selectedInstansi]);
 
-  const fetchBaseData = async () => {
+  const fetchInstansiList = async () => {
     try {
       const list = await getInstansi();
-      setInstansiList(list);
+      setInstansiList(list || []);
       if (list?.length > 0 && !selectedInstansi) {
         setSelectedInstansi(list[0].id);
       }
@@ -62,30 +69,34 @@ const SuperAdmin = () => {
     }
   };
 
-  const fetchKelasList = async (instansi_id) => {
+  const fetchSecondaryData = async () => {
+    if (!selectedInstansi) return;
     try {
-      const list = await getKelas(instansi_id);
-      setKelasList(list);
-    } catch (err) {
-      setToast({ message: 'Gagal memuat list kelas', type: 'error' });
-    }
+      const k = await getKelas(selectedInstansi);
+      setKelasList(k || []);
+    } catch (err) {}
   };
 
   const fetchTabData = async () => {
+    if (activeTab !== 'instansi' && !selectedInstansi) {
+       setData([]);
+       return;
+    }
     setLoading(true);
     try {
       let result = [];
+      const sid = selectedInstansi;
       switch (activeTab) {
         case 'instansi': result = await getInstansi(); break;
-        case 'guru': result = await getUsers(selectedInstansi, 'guru'); break;
-        case 'siswa': result = await getUsers(selectedInstansi, 'siswa'); break;
-        case 'kelas': result = await getKelas(selectedInstansi); break;
-        case 'mapel': result = await getMapel(selectedInstansi); break;
-        case 'wa-groups': result = await getWAGroups(selectedInstansi); break;
-        case 'wa-logs': result = await getWALogs(selectedInstansi); break;
-        case 'monitor-pr': result = await getPRAllKelas(selectedInstansi); break;
+        case 'guru': result = await getUsers(sid, 'guru'); break;
+        case 'siswa': result = await getUsers(sid, 'siswa'); break;
+        case 'kelas': result = await getKelas(sid); break;
+        case 'mapel': result = await getMapel(sid); break;
+        case 'wa-groups': result = await getWAGroups(sid); break;
+        case 'wa-logs': result = await getWALogs(sid); break;
+        case 'monitor-pr': result = await getPRAllKelas(sid); break;
       }
-      setData(result);
+      setData(result || []);
     } catch (err) {
       setData([]);
     } finally {
@@ -95,48 +106,54 @@ const SuperAdmin = () => {
 
   const handleAction = async (e) => {
     e.preventDefault();
+    const sid = selectedInstansi;
     try {
       if (activeTab === 'instansi') {
         if (editData) await updateInstansi({ ...formData, id: editData.id });
         else await addInstansi(formData);
-        fetchBaseData();
-      } else if (activeTab === 'guru') {
-        if (editData) await updateGuru({ ...formData, id: editData.id });
-        else await addGuru({ ...formData, instansi_id: selectedInstansi });
-      } else if (activeTab === 'kelas') {
-        await addKelas(formData.nama, selectedInstansi);
-      } else if (activeTab === 'mapel') {
-        await addMapel(formData.nama, selectedInstansi);
-      } else if (activeTab === 'wa-groups') {
+        await fetchInstansiList();
+      } 
+      else if (activeTab === 'guru') {
+        if (editData) await updateGuru({ ...formData, instansi_id: sid });
+        else await addGuru({ ...formData, instansi_id: sid });
+      } 
+      else if (activeTab === 'kelas') {
+        await addKelas(formData.nama, sid);
+      } 
+      else if (activeTab === 'mapel') {
+        await addMapel(formData.nama, sid);
+      } 
+      else if (activeTab === 'wa-groups') {
         if (!formData.group_id || formData.group_id.toUpperCase() === 'PENDING') {
-          return setToast({ message: 'Group ID tidak boleh kosong atau PENDING', type: 'error' });
+          return setToast({ message: 'Group ID WA tidak boleh kosong atau PENDING', type: 'error' });
         }
-        await updateWAGroup({ ...formData, instansi_id: selectedInstansi });
+        await updateWAGroup({ ...formData, instansi_id: sid });
       }
       
       setToast({ message: `Data ${editData ? 'diperbarui' : 'ditambahkan'}`, type: 'success' });
       setModalOpen(false);
       fetchTabData();
     } catch (err) {
-      setToast({ message: 'Gagal melakukan aksi', type: 'error' });
+      setToast({ message: err.response?.data?.message || 'Gagal menyimpan data', type: 'error' });
     }
   };
 
-  const handleDelete = async (id, extra = null) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Hapus data ini?')) {
+      const sid = selectedInstansi;
       try {
         switch (activeTab) {
-          case 'instansi': await deleteInstansi(id); fetchBaseData(); break;
+          case 'instansi': await deleteInstansi(id); await fetchInstansiList(); break;
           case 'guru':
           case 'siswa': await deleteUser(id); break;
-          case 'kelas': await deleteKelas(id, selectedInstansi); break;
-          case 'mapel': await deleteMapel(id, selectedInstansi); break;
-          case 'monitor-pr': await deletePR(id); break;
+          case 'kelas': await deleteKelas(id, sid); break;
+          case 'mapel': await deleteMapel(id, sid); break;
+          case 'monitor-pr': await deletePR(id, sid); break;
         }
         setToast({ message: 'Data berhasil dihapus', type: 'success' });
         fetchTabData();
       } catch (err) {
-        setToast({ message: 'Gagal menghapus', type: 'error' });
+        setToast({ message: 'Gagal menghapus data', type: 'error' });
       }
     }
   };
@@ -144,17 +161,15 @@ const SuperAdmin = () => {
   const filteredData = (data || []).filter(item => {
     if (!item) return false;
     const s = searchQuery.toLowerCase();
-    
-    // Safety check for properties
     const nama = item.nama?.toLowerCase() || '';
     const kode = item.kode?.toLowerCase() || '';
     const judul = item.judul?.toLowerCase() || '';
     const mapel = item.mapel?.toLowerCase() || '';
     const kelas = item.kelas?.toLowerCase() || '';
+    const judul_pr = item.judul_pr?.toLowerCase() || '';
 
     if (activeTab === 'instansi') return nama.includes(s) || kode.includes(s);
-    if (activeTab === 'guru') return nama.includes(s);
-    if (activeTab === 'siswa') return nama.includes(s) || kelas.includes(s);
+    if (activeTab === 'wa-logs') return judul_pr.includes(s) || kelas.includes(s);
     if (activeTab === 'monitor-pr') return judul.includes(s) || mapel.includes(s);
     return nama.includes(s) || kelas.includes(s);
   });
@@ -178,7 +193,7 @@ const SuperAdmin = () => {
                <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
                <input 
                  type="text" 
-                 placeholder="Cari data..."
+                 placeholder={`Cari di data ${activeTab}...`}
                  className="w-full bg-[#1e293b] border border-white/5 rounded-2xl pl-16 pr-6 py-4 text-white outline-none focus:ring-4 focus:ring-purple-500/10 transition-all font-bold placeholder:text-slate-600"
                  value={searchQuery}
                  onChange={(e) => setSearchQuery(e.target.value)}
@@ -191,7 +206,6 @@ const SuperAdmin = () => {
                   setEditData(null); 
                   setFormData({}); 
                   setModalOpen(true); 
-                  if (activeTab === 'wa-groups') fetchKelasList(selectedInstansi);
                 }}
               >
                 <Plus size={20} /> Tambah
@@ -223,7 +237,7 @@ const SuperAdmin = () => {
 
        <div className="bg-[#1e293b]/50 backdrop-blur-xl rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl">
           <div className="px-10 py-6 border-b border-white/5 flex justify-between items-center bg-white/5">
-             <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Listing Data</h4>
+             <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Listing Data {activeTab}</h4>
              <span className="text-[10px] font-black text-purple-400 bg-purple-500/10 px-4 py-1.5 rounded-full border border-purple-500/20">
                {filteredData?.length || 0} TOTAL
              </span>
@@ -241,9 +255,9 @@ const SuperAdmin = () => {
                 </thead>
                 <tbody className="divide-y divide-white/5">
                    {loading ? (
-                     <tr><td colSpan="4" className="px-10 py-20 text-center text-slate-500 animate-pulse font-bold tracking-widest uppercase">Loading Matrix...</td></tr>
+                     <tr><td colSpan="4" className="px-10 py-20 text-center text-slate-500 animate-pulse font-bold tracking-widest uppercase">Memuat dari database...</td></tr>
                    ) : (filteredData?.length || 0) === 0 ? (
-                     <tr><td colSpan="4" className="px-10 py-20 text-center text-slate-600 italic">Data tidak ditemukan dalam database.</td></tr>
+                     <tr><td colSpan="4" className="px-10 py-20 text-center text-slate-600 italic">Data kosong atau tidak ditemukan.</td></tr>
                    ) : filteredData?.map((item, i) => (
                       <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
                          <td className="px-10 py-6">
@@ -261,7 +275,7 @@ const SuperAdmin = () => {
                             {(activeTab === 'guru' || activeTab === 'siswa') && (
                                <div className="flex flex-col">
                                   <span className="text-white font-black text-lg tracking-tight uppercase">{item.nama}</span>
-                                  <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">{item.username || item.id}</span>
+                                  <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">{item.username || `ID: ${item.id}`}</span>
                                </div>
                             )}
                             {(activeTab === 'kelas' || activeTab === 'mapel') && (
@@ -291,12 +305,17 @@ const SuperAdmin = () => {
                             {activeTab === 'guru' && <Badge color="purple">{item.kode_unik}</Badge>}
                             {activeTab === 'siswa' && <Badge color="blue">{item.kelas}</Badge>}
                             {activeTab === 'wa-groups' && (
-                               item.group_id !== 'PENDING' ? <Badge color="green">AKTIF</Badge> : <Badge color="red">PENDING</Badge>
+                               item.group_id && item.group_id.toUpperCase() !== 'PENDING' ? <Badge color="green">AKTIF</Badge> : <Badge color="red">PENDING</Badge>
                             )}
                             {activeTab === 'wa-logs' && (
                                item.status === 'success' ? <Badge color="green">SUCCESS</Badge> : <Badge color="red">FAILED</Badge>
                             )}
-                            {activeTab === 'monitor-pr' && <span className="text-slate-500 text-xs font-bold">{item.deadline}</span>}
+                            {activeTab === 'monitor-pr' && (
+                               <div className="flex flex-col">
+                                  <span className="text-slate-400 text-xs font-bold uppercase">{item.nama_guru}</span>
+                                  <span className="text-slate-600 text-[10px] font-black uppercase">{new Date(item.deadline).toLocaleDateString()}</span>
+                               </div>
+                            )}
                          </td>
                          <td className="px-10 py-6">
                             <div className="flex justify-center gap-3">
@@ -308,7 +327,7 @@ const SuperAdmin = () => {
                                    <Edit2 size={16} />
                                  </button>
                                )}
-                               {activeTab !== 'wa-groups' && activeTab !== 'wa-logs' && (
+                               {activeTab !== 'wa-logs' && (
                                  <button 
                                    onClick={() => handleDelete(item.id)}
                                    className="p-3 bg-slate-800 text-slate-400 hover:bg-red-600 hover:text-white rounded-2xl transition-all"
@@ -333,8 +352,7 @@ const SuperAdmin = () => {
                    <div>
                       <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Nama Instansi</label>
                       <input 
-                        type="text" 
-                        required 
+                        type="text" required 
                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-800 outline-none focus:ring-4 focus:ring-purple-500/10 font-bold"
                         value={formData.nama || ''} onChange={e => setFormData({...formData, nama: e.target.value})}
                       />
@@ -342,8 +360,7 @@ const SuperAdmin = () => {
                    <div>
                       <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Kode Instansi</label>
                       <input 
-                        type="text" 
-                        required 
+                        type="text" required 
                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-800 outline-none focus:ring-4 focus:ring-purple-500/10 font-bold"
                         value={formData.kode || ''} onChange={e => setFormData({...formData, kode: e.target.value})}
                       />
@@ -423,6 +440,7 @@ const SuperAdmin = () => {
                         type="text" 
                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-800 outline-none focus:ring-4 focus:ring-purple-500/10 font-bold"
                         value={formData.keterangan || ''} onChange={e => setFormData({...formData, keterangan: e.target.value})}
+                        placeholder="Contoh: Grup WA IX RPL"
                       />
                    </div>
                 </>
@@ -430,7 +448,7 @@ const SuperAdmin = () => {
 
              <div className="flex gap-4 pt-4">
                 <Button type="button" variant="outline" className="flex-1" onClick={() => setModalOpen(false)}>Batal</Button>
-                <Button type="submit" className="flex-1 bg-purple-600 hover:bg-purple-500">{editData ? 'Perbarui Data' : 'Tambah Database'}</Button>
+                <Button type="submit" className="flex-1 bg-purple-600 hover:bg-purple-500">{editData ? 'Perbarui Data' : 'Simpan Data'}</Button>
              </div>
           </form>
        </Modal>

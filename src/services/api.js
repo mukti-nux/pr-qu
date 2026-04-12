@@ -82,8 +82,8 @@ export const createPR = (payload) =>
 export const updatePR = (payload) =>
   api.post('/update-pr', payload).then(r => r.data);
 
-export const deletePR = (id) =>
-  api.post('/delete-pr', { id }).then(r => r.data);
+export const deletePR = (id, instansi_id) =>
+  api.post('/delete-pr', { id, instansi_id }).then(r => r.data);
 
 // WHATSAPP
 export const kirimWA = (payload) =>

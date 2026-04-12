@@ -68,10 +68,10 @@ const Login = () => {
     try {
       const res = await loginGuru(selectedInstansi, guruId, kodeUnik);
       if (res.status === 'success') {
-        const instansiName = instansiList?.find(i => i.id === selectedInstansi)?.nama;
+        const instansiName = instansiList?.find(i => String(i.id) === String(selectedInstansi))?.nama;
         localStorage.setItem('user_session', JSON.stringify({
           ...res.data,
-          instansi: instansiName
+          instansi: instansiName || 'Instansi'
         }));
         navigate('/dashboard-guru');
       } else {
@@ -96,10 +96,11 @@ const Login = () => {
         nisn: siswaNisn
       });
       if (res.status === 'success') {
-        const instansiName = instansiList?.find(i => i.id === selectedInstansi)?.nama;
+        const instansiName = instansiList?.find(i => String(i.id) === String(selectedInstansi))?.nama;
         localStorage.setItem('user_session', JSON.stringify({
           ...res.data,
-          instansi: instansiName
+          role: 'siswa', // Ensure role is set
+          instansi: instansiName || 'Instansi'
         }));
         navigate('/dashboard-siswa');
       }
