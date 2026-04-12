@@ -112,10 +112,7 @@ const Login = () => {
   };
 
   return (
-    <div 
-      className="min-h-screen bg-cover bg-center bg-no-repeat flex items-center justify-center p-4 relative"
-      style={{ backgroundImage: "url('/background.png')" }}
-    >
+    <div className="min-h-screen bg-slate-900 bg-login flex items-center justify-center p-4 relative">
       {/* Overlay to ensure readability */}
       <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-[2px]"></div>
 
