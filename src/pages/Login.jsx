@@ -112,8 +112,14 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-[1000px] flex flex-col md:flex-row bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100">
+    <div 
+      className="min-h-screen bg-cover bg-center bg-no-repeat flex items-center justify-center p-4 relative"
+      style={{ backgroundImage: "url('/background.png')" }}
+    >
+      {/* Overlay to ensure readability */}
+      <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-[2px]"></div>
+
+      <div className="relative z-10 w-full max-w-[1000px] flex flex-col md:flex-row bg-white/95 backdrop-blur-md rounded-[3rem] shadow-2xl overflow-hidden border border-white/20">
         
         {/* Left Side: Branding */}
         <div className="hidden md:flex flex-col justify-between p-12 bg-primary-dark text-white w-1/2 relative overflow-hidden">
