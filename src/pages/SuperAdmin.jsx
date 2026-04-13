@@ -10,11 +10,13 @@ import {
   getKelas, addKelas, deleteKelas,
   getMapel, addMapel, deleteMapel,
   getWAGroups, updateWAGroup,
-  getWALogs, getPRAllKelas, deletePR
+  getWALogs, getPRAllKelas, deletePR,
+  getJadwal, addJadwal, deleteJadwal,
+  getBuku, deleteBuku
 } from '../services/api';
 import { 
   Search, Plus, Edit2, Trash2, Building2, Send, 
-  MessageSquare, FileText, CheckCircle, XCircle, Info
+  MessageSquare, FileText, CheckCircle, XCircle, Info, Calendar, Image as ImageIcon, Library
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -95,6 +97,8 @@ const SuperAdmin = () => {
         case 'wa-groups': result = await getWAGroups(sid); break;
         case 'wa-logs': result = await getWALogs(sid); break;
         case 'monitor-pr': result = await getPRAllKelas(sid); break;
+        case 'jadwal': result = await getJadwal(sid); break;
+        case 'monitor-buku': result = await getBuku(sid); break;
       }
       setData(result || []);
     } catch (err) {
@@ -124,10 +128,10 @@ const SuperAdmin = () => {
         await addMapel(formData.nama, sid);
       } 
       else if (activeTab === 'wa-groups') {
-        if (!formData.group_id || formData.group_id.toUpperCase() === 'PENDING') {
-          return setToast({ message: 'Group ID WA tidak boleh kosong atau PENDING', type: 'error' });
-        }
         await updateWAGroup({ ...formData, instansi_id: sid });
+      }
+      else if (activeTab === 'jadwal') {
+        await addJadwal({ ...formData, instansi_id: sid });
       }
       
       setToast({ message: `Data ${editData ? 'diperbarui' : 'ditambahkan'}`, type: 'success' });
@@ -149,6 +153,8 @@ const SuperAdmin = () => {
           case 'kelas': await deleteKelas(id, sid); break;
           case 'mapel': await deleteMapel(id, sid); break;
           case 'monitor-pr': await deletePR(id, sid); break;
+          case 'jadwal': await deleteJadwal(id, sid); break;
+          case 'monitor-buku': await deleteBuku(id, sid); break;
         }
         setToast({ message: 'Data berhasil dihapus', type: 'success' });
         fetchTabData();
@@ -171,6 +177,8 @@ const SuperAdmin = () => {
     if (activeTab === 'instansi') return nama.includes(s) || kode.includes(s);
     if (activeTab === 'wa-logs') return judul_pr.includes(s) || kelas.includes(s);
     if (activeTab === 'monitor-pr') return judul.includes(s) || mapel.includes(s);
+    if (activeTab === 'jadwal') return kelas.includes(s) || (item.keterangan || '').toLowerCase().includes(s);
+    if (activeTab === 'monitor-buku') return judul.includes(s) || (item.penulis || '').toLowerCase().includes(s) || mapel.includes(s);
     return nama.includes(s) || kelas.includes(s);
   });
 
@@ -199,7 +207,7 @@ const SuperAdmin = () => {
                  onChange={(e) => setSearchQuery(e.target.value)}
                />
             </div>
-            {['instansi', 'guru', 'kelas', 'mapel', 'wa-groups'].includes(activeTab) && (
+            {['instansi', 'guru', 'kelas', 'mapel', 'wa-groups', 'jadwal'].includes(activeTab) && (
               <Button 
                 className="bg-purple-600 hover:bg-purple-500 rounded-2xl h-[60px] px-8 flex items-center gap-2 shadow-lg shadow-purple-600/20"
                 onClick={() => { 
@@ -299,6 +307,36 @@ const SuperAdmin = () => {
                                   <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">{item.kelas} — {new Date(item.created_at).toLocaleString()}</span>
                                </div>
                             )}
+                            {activeTab === 'jadwal' && (
+                                <div className="flex items-center gap-4">
+                                   <div className="w-16 h-10 overflow-hidden rounded-lg bg-slate-900 border border-white/5 flex-shrink-0">
+                                      {item.file_url ? (
+                                        <img src={item.file_url} alt="Jadwal" className="w-full h-full object-cover" onError={(e) => e.target.src='https://placehold.co/100x100?text=File'} />
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center"><ImageIcon size={14} className="text-slate-700" /></div>
+                                      )}
+                                   </div>
+                                   <div className="flex flex-col">
+                                      <span className="text-white font-black text-lg tracking-tight uppercase">{item.kelas}</span>
+                                      <span className="text-[10px] text-purple-400 font-bold uppercase tracking-widest">{item.updated_at ? new Date(item.updated_at).toLocaleDateString() : 'N/A'}</span>
+                                   </div>
+                                </div>
+                             )}
+                             {activeTab === 'monitor-buku' && (
+                                <div className="flex items-center gap-4">
+                                   <div className="w-10 h-14 overflow-hidden rounded bg-slate-900 border border-white/5 flex-shrink-0">
+                                      {item.cover_url ? (
+                                        <img src={item.cover_url} className="w-full h-full object-cover" />
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-purple-600/20 text-purple-400 font-black text-[10px] uppercase">{item.mapel?.[0]}</div>
+                                      )}
+                                   </div>
+                                   <div className="flex flex-col">
+                                      <span className="text-white font-black text-sm uppercase tracking-tight">{item.judul}</span>
+                                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{item.penulis || 'Anonim'}</span>
+                                   </div>
+                                </div>
+                             )}
                          </td>
                          <td className="px-10 py-6">
                             {activeTab === 'instansi' && <span className="text-slate-400 text-sm font-medium">{item.alamat}</span>}
@@ -316,10 +354,22 @@ const SuperAdmin = () => {
                                   <span className="text-slate-600 text-[10px] font-black uppercase">{new Date(item.deadline).toLocaleDateString()}</span>
                                </div>
                             )}
+                            {activeTab === 'jadwal' && (
+                                <div className="flex flex-col">
+                                   <span className="text-slate-400 text-sm font-medium">{item.keterangan || '-'}</span>
+                                   <span className="text-slate-600 text-[10px] font-black uppercase">{item.updated_at ? new Date(item.updated_at).toLocaleDateString() : 'N/A'}</span>
+                                </div>
+                             )}
+                             {activeTab === 'monitor-buku' && (
+                                <div className="flex flex-col">
+                                   <span className="text-slate-400 text-xs font-bold uppercase">{item.mapel} — {item.kelas}</span>
+                                   <span className="text-purple-400 text-[10px] font-black uppercase tracking-widest">{item.kategori}</span>
+                                </div>
+                             )}
                          </td>
                          <td className="px-10 py-6">
                             <div className="flex justify-center gap-3">
-                               {['instansi', 'guru', 'wa-groups'].includes(activeTab) && (
+                               {['instansi', 'guru', 'wa-groups', 'jadwal'].includes(activeTab) && (
                                  <button 
                                    onClick={() => { setEditData(item); setFormData(item); setModalOpen(true); }}
                                    className="p-3 bg-slate-800 text-slate-400 hover:bg-purple-600 hover:text-white rounded-2xl transition-all"
@@ -445,6 +495,47 @@ const SuperAdmin = () => {
                    </div>
                 </>
              )}
+
+             {activeTab === 'jadwal' && (
+                 <>
+                    <div>
+                       <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Pilih Kelas</label>
+                       <select 
+                         required
+                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-800 outline-none focus:ring-4 focus:ring-purple-500/10 font-bold"
+                         value={formData.kelas || ''}
+                         onChange={e => setFormData({...formData, kelas: e.target.value})}
+                       >
+                         <option value="">-- Pilih Kelas --</option>
+                         {kelasList?.map(k => <option key={k.id} value={k.nama}>{k.nama}</option>)}
+                       </select>
+                    </div>
+                    <div>
+                       <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">URL File/Gambar Jadwal</label>
+                       <input 
+                         type="url" required
+                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-800 outline-none focus:ring-4 focus:ring-purple-500/10 font-bold"
+                         value={formData.file_url || ''} onChange={e => setFormData({...formData, file_url: e.target.value})}
+                         placeholder="https://..."
+                       />
+                       {formData.file_url && (
+                         <div className="mt-4 p-2 bg-slate-100 rounded-xl border border-slate-200 flex items-center gap-4">
+                            <img src={formData.file_url} className="w-16 h-10 object-cover rounded-lg shadow-sm" onError={(e) => e.target.style.display='none'} />
+                            <span className="text-[10px] font-bold text-slate-500 truncate">{formData.file_url}</span>
+                         </div>
+                       )}
+                    </div>
+                    <div>
+                       <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Keterangan</label>
+                       <input 
+                         type="text" required
+                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-800 outline-none focus:ring-4 focus:ring-purple-500/10 font-bold"
+                         value={formData.keterangan || ''} onChange={e => setFormData({...formData, keterangan: e.target.value})}
+                         placeholder="Contoh: Jadwal Semester Ganjil"
+                       />
+                    </div>
+                 </>
+              )}
 
              <div className="flex gap-4 pt-4">
                 <Button type="button" variant="outline" className="flex-1" onClick={() => setModalOpen(false)}>Batal</Button>

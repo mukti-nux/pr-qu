@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, NavLink, useLocation } from 'react-router-dom';
 import { 
   Building2, Users, GraduationCap, LayoutGrid, BookOpen, 
-  MessageSquare, FileText, BarChart, LogOut, ShieldCheck
+  MessageSquare, FileText, BarChart, LogOut, ShieldCheck, Calendar
 } from 'lucide-react';
 
 export const SuperAdminLayout = ({ children }) => {
@@ -22,6 +22,8 @@ export const SuperAdminLayout = ({ children }) => {
     { name: 'Siswa', icon: <GraduationCap size={20} />, id: 'siswa' },
     { name: 'Kelas', icon: <LayoutGrid size={20} />, id: 'kelas' },
     { name: 'Mapel', icon: <BookOpen size={20} />, id: 'mapel' },
+    { name: 'Jadwal', icon: <Calendar size={20} />, id: 'jadwal' },
+    { name: 'Monitor Buku', icon: <Library size={20} />, id: 'monitor-buku' },
     { name: 'Grup WhatsApp', icon: <MessageSquare size={20} />, id: 'wa-groups' },
     { name: 'Log WA', icon: <FileText size={20} />, id: 'wa-logs' },
     { name: 'Monitor PR', icon: <BarChart size={20} />, id: 'monitor-pr' },

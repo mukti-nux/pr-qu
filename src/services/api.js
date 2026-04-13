@@ -98,4 +98,39 @@ export const updateWAGroup = (payload) =>
 export const getWALogs = (instansi_id) =>
   api.get(`/get-wa-logs?instansi_id=${instansi_id}`).then(r => r.data.data);
 
+// JADWAL
+export const getJadwal = (instansi_id) =>
+  api.get(`/get-jadwal?instansi_id=${instansi_id}`).then(r => r.data.data);
+
+export const addJadwal = (payload) =>
+  api.post('/add-jadwal', payload).then(r => r.data);
+
+export const deleteJadwal = (id, instansi_id) =>
+  api.post('/delete-jadwal', { id, instansi_id }).then(r => r.data);
+
+// BUKU / PERPUSTAKAAN
+export const getBuku = (instansi_id) =>
+  api.get(`/get-buku?instansi_id=${instansi_id}`).then(r => r.data.data);
+
+export const getBukuKelas = (kelas, instansi_id) =>
+  api.get(`/get-buku-kelas?kelas=${kelas}&instansi_id=${instansi_id}`)
+    .then(r => r.data.data);
+
+export const addBuku = (payload) =>
+  api.post('/add-buku', payload).then(r => r.data);
+
+export const updateBuku = (payload) =>
+  api.post('/update-buku', payload).then(r => r.data);
+
+export const deleteBuku = (id, instansi_id) =>
+  api.post('/delete-buku', { id, instansi_id }).then(r => r.data);
+
+export const notifBuku = (payload) =>
+  api.post('/notif-buku', payload).then(r => r.data);
+
+export const generateBukuAI = async (judul) => {
+  const res = await api.post('/generate-buku-ai', { judul });
+  return res.data.data;
+};
+
 export default api;

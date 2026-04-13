@@ -7,6 +7,7 @@ import Manajemen from './pages/Manajemen';
 import NotifikasiWA from './pages/NotifikasiWA';
 import SuperAdminLogin from './pages/SuperAdminLogin';
 import SuperAdmin from './pages/SuperAdmin';
+import Perpustakaan from './pages/Perpustakaan';
 
 // Route Guards
 const ProtectedRoute = ({ children, role }) => {
@@ -62,6 +63,15 @@ function App() {
           element={
             <ProtectedRoute role="guru">
               <NotifikasiWA />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/perpustakaan" 
+          element={
+            <ProtectedRoute>
+              <Perpustakaan />
             </ProtectedRoute>
           } 
         />

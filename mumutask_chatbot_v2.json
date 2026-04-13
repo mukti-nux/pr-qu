@@ -1,0 +1,410 @@
+{
+  "name": "MumuTask Chatbot V2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatbot-pr",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "19f73b04-58b4-4447-b6d8-80ce50a1f19d",
+      "name": "Webhook",
+      "webhookId": "789b89c1-7a31-43aa-8a7c-b4e672344ac2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f61312e4-28e3-4a40-b26e-79d324d0083a",
+              "leftValue": "={{ $json.body.message }}",
+              "rightValue": "@pr",
+              "operator": {
+                "type": "string",
+                "operation": "contains",
+                "name": "filter.operator.contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        220,
+        0
+      ],
+      "id": "a4437b9a-9343-4ae0-a7b6-502fa12306f1",
+      "name": "Is Trigger @pr?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT kelas, instansi_id\nFROM wa_groups\nWHERE group_id = '{{ $json.body.sender }}'\nLIMIT 1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        440,
+        -100
+      ],
+      "id": "e557df7d-276b-4995-90de-a3db33387463",
+      "name": "Lookup Group ID",
+      "credentials": {
+        "postgres": {
+          "id": "Zw2sXRi76fSQbR8A",
+          "name": "PostgreSQL PR Sekolah"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a595d2d4-5574-4a2e-8676-d386befee78c",
+              "leftValue": "={{ $json.kelas }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        660,
+        -100
+      ],
+      "id": "96c45741-c8fb-428d-afcb-c22a84b29ffd",
+      "name": "Class Found?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT mapel, judul, deskripsi, deadline\nFROM pr\nWHERE kelas = '{{ $('Lookup Group ID').item.json.kelas }}'\nAND instansi_id = {{ $('Lookup Group ID').item.json.instansi_id }}\nAND deadline >= CURRENT_DATE\nORDER BY deadline ASC\nLIMIT 10",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        880,
+        -200
+      ],
+      "id": "4c1eebb9-ad6e-4a71-97e3-8e4c41c9d3b9",
+      "name": "Get Active PR",
+      "credentials": {
+        "postgres": {
+          "id": "Zw2sXRi76fSQbR8A",
+          "name": "PostgreSQL PR Sekolah"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "12fc70ac-b777-475d-bdef-f8fe3b0e1c82",
+              "leftValue": "={{ $input.all().length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1100,
+        -200
+      ],
+      "id": "45912df0-7004-49b9-bd53-ed5da2025425",
+      "name": "Has PR?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const prList = $input.all().map(item => item.json);\nconst kelas = $('Lookup Group ID').item.json.kelas;\n\nconst prText = prList.map((pr, i) => \n  `${i+1}. ${pr.mapel} — ${pr.judul} (deadline: ${pr.deadline})`\n).join('\\n');\n\nreturn [{\n  json: {\n    kelas,\n    pr_text: prText,\n    group_id: $('Webhook').item.json.body.sender,\n    prompt: `Kamu adalah asisten PR sekolah yang asik dan menyenangkan bernama MumuTask Bot. \\nFormatkan daftar PR berikut untuk kelas ${kelas} menjadi pesan WhatsApp yang seru, \\nsemangat, pakai emoji, dan sesekali humor ringan sesuai mata pelajaran.\\n\\nJOKES RULES:\\n- Jika ada Matematika, candain tentang pusingnya rumus atau cari nilai X.\\n- Jika weekend, ingatkan buat healing tapi jangan lupa tugas.\\n\\nFormatkan dengan rapi.\\n\\nData PR:\\n${prText}`\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        -300
+      ],
+      "id": "8d5b3600-87a4-4344-9ef0-1f4f9778e020",
+      "name": "Prepare AI Prompt"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=YOUR_GEMINI_API_KEY",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"{{ $json.prompt }}\"\n    }]\n  }]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1540,
+        -300
+      ],
+      "id": "b60e35ef-cb05-4d80-888b-b76608b1f7eb",
+      "name": "Gemini AI"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst text = response.candidates[0].content.parts[0].text;\nconst groupId = $('Prepare AI Prompt').item.json.group_id;\n\nreturn [{ json: { message: text, group_id: groupId } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        -300
+      ],
+      "id": "9b489997-77c6-41b6-af8e-2e23a818539c",
+      "name": "Extract AI Text"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.fonnte.com/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "4jGYkhDByqMQEioCjSgs"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"target\" : \"{{ $json.group_id }}\",\n  \"message\": \"{{ $json.message }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2000,
+        -300
+      ],
+      "id": "6846d47a-db46-40a4-90d3-1b1539c27dc5",
+      "name": "Send back to Fonnte"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.fonnte.com/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "4jGYkhDByqMQEioCjSgs"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"target\" : \"{{ $('Prepare AI Prompt').item.json.group_id }}\",\n  \"message\": \"🎉 Halo kelas! Tidak ada PR aktif saat ini. Nikmati waktu luangmu! 😄— MumuTask Bot\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1320,
+        -100
+      ],
+      "id": "2a429c59-2eae-47fe-b50d-0d46214f6133",
+      "name": "Reply No PR"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.fonnte.com/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "4jGYkhDByqMQEioCjSgs"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"target\" : \"{{ $('Webhook').item.json.body.sender }}\",\n  \"message\": \"❌ Grup ini belum terdaftar di sistem MumuTask. Hubungi admin sekolah.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        880,
+        0
+      ],
+      "id": "8ce99944-7ebd-43d7-938e-1bdd4a0fe054",
+      "name": "Reply Not Registered"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Is Trigger @pr?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Trigger @pr?": {
+      "main": [
+        [
+          {
+            "node": "Lookup Group ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Group ID": {
+      "main": [
+        [
+          {
+            "node": "Class Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Class Found?": {
+      "main": [
+        [
+          {
+            "node": "Get Active PR",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply Not Registered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Active PR": {
+      "main": [
+        [
+          {
+            "node": "Has PR?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has PR?": {
+      "main": [
+        [
+          {
+            "node": "Prepare AI Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply No PR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare AI Prompt": {
+      "main": [
+        [
+          {
+            "node": "Gemini AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini AI": {
+      "main": [
+        [
+          {
+            "node": "Extract AI Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract AI Text": {
+      "main": [
+        [
+          {
+            "node": "Send back to Fonnte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

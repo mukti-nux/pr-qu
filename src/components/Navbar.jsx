@@ -28,13 +28,18 @@ export const Navbar = () => {
           <div className="hidden md:flex items-center gap-8">
             {session.role === 'guru' && (
               <>
-                <Link to="/dashboard-guru" className="text-sm font-medium hover:text-accent-yellow transition-colors">Dashboard</Link>
-                <Link to="/manajemen" className="text-sm font-medium hover:text-accent-yellow transition-colors">Manajemen</Link>
-                <Link to="/notifikasi-wa" className="text-sm font-medium hover:text-accent-yellow transition-colors">Log WhatsApp</Link>
+                <Link to="/dashboard-guru" className="text-sm font-bold hover:text-accent-yellow transition-all uppercase tracking-widest px-3 py-2 rounded-xl hover:bg-white/5">Dashboard</Link>
+                <Link to="/manajemen" className="text-sm font-bold hover:text-accent-yellow transition-all uppercase tracking-widest px-3 py-2 rounded-xl hover:bg-white/5">Manajemen</Link>
+                <Link to="/perpustakaan" className="text-sm font-bold hover:text-accent-yellow transition-all uppercase tracking-widest px-3 py-2 rounded-xl hover:bg-white/5">📚 Perpustakaan</Link>
+                <Link to="/notifikasi-wa" className="text-sm font-bold hover:text-accent-yellow transition-all uppercase tracking-widest px-3 py-2 rounded-xl hover:bg-white/5">Logs</Link>
               </>
             )}
             {session.role === 'siswa' && (
-              <span className="text-sm font-medium text-slate-300">Kelas {session.kelas}</span>
+              <div className="flex items-center gap-6">
+                <Link to="/dashboard-siswa" className="text-sm font-bold hover:text-accent-yellow transition-all uppercase tracking-widest px-3 py-2 rounded-xl hover:bg-white/5">Tugasku</Link>
+                <Link to="/perpustakaan" className="text-sm font-bold hover:text-accent-yellow transition-all uppercase tracking-widest px-3 py-2 rounded-xl hover:bg-white/5">📚 Perpustakaan</Link>
+                <span className="text-[10px] font-black bg-accent-yellow/10 text-accent-yellow px-4 py-1.5 rounded-full border border-accent-yellow/30 uppercase tracking-[0.2em]">Kelas {session.kelas}</span>
+              </div>
             )}
           </div>
 
